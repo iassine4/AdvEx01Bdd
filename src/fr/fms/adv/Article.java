@@ -12,6 +12,13 @@ public class Article {
         this.brand = brand;
         this.price = price;
     }
+    
+    /**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
 
     /**
 	 * @param description the description to set
@@ -34,6 +41,7 @@ public class Article {
 		this.price = price;
 	}
 
+
 	public int getId() {
         return id;
     }
@@ -49,4 +57,9 @@ public class Article {
     public double getPrice() {
         return price;
     }
+    @Override
+    public String toString() {
+        return id + " - " + description + " - " + brand + " - " + price;
+    }
+
 }

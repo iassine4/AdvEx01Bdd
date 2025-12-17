@@ -41,8 +41,8 @@ public class TestJdbc {
 					}
 				}
 			}
-			for(Article a : articles)
-				System.out.println(a.getId() + "-" + a.getDescription() + "-" + a.getBrand() + "-" + a.getPrice());
+			for (Article a : articles) System.out.println(a);
+
 		}
 		catch(SQLException e) {
 			e.printStackTrace();
