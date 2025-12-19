@@ -4,13 +4,13 @@ public class Article {
     private int id;
     private String description;
     private String brand;
-    private double price;
+    private double unitaryPrice;
 
-    public Article(int id, String description, String brand, double price) {
+    public Article(int id, String description, String brand, double unitaryPrice) {
         this.id = id;
         this.description = description;
         this.brand = brand;
-        this.price = price;
+        this.unitaryPrice = unitaryPrice;
     }
     
     public Article() {
@@ -39,10 +39,10 @@ public class Article {
 	}
 
 	/**
-	 * @param price the price to set
+	 * @param unitaryPrice the price to set
 	 */
-	public void setPrice(double price) {
-		this.price = price;
+	public void setUnitaryPrice(double unitaryPrice) {
+		this.unitaryPrice = unitaryPrice;
 	}
 
 
@@ -58,12 +58,12 @@ public class Article {
         return brand;
     }
 
-    public double getPrice() {
-        return price;
+    public double getUnitaryPrice() {
+        return unitaryPrice;
     }
     @Override
     public String toString() {
-        return id + " - " + description + " - " + brand + " - " + price;
+        return id + " - " + description + " - " + brand + " - " + unitaryPrice;
     }
 
 }
