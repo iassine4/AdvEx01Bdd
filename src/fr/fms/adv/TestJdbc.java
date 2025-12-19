@@ -6,6 +6,7 @@ package fr.fms.adv;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,7 +16,6 @@ public class TestJdbc {
 
 	public static void main(String[] args) throws Exception {
 		
-		ArrayList<Article> articles = new ArrayList<Article>();
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
@@ -28,7 +28,10 @@ public class TestJdbc {
 		String login = "root";
 		String password = "fms2025";
 		
+		ArrayList<Article> articles = new ArrayList<Article>();
+		
 		try(Connection connection = DriverManager.getConnection(url, login,password)){
+			
 			String strSql = "SELECT * FROM t_articles";
 			try(Statement statement = connection.createStatement()){
 				try(ResultSet resultSet = statement.executeQuery(strSql)){
@@ -40,7 +43,9 @@ public class TestJdbc {
 						articles.add(new Article(rsIdUser, rsDescription, rsBrand, rsPrice));
 					}
 				}
+				statement.close();
 			}
+			
 			for (Article a : articles) System.out.println(a);
 
 		}
@@ -48,6 +53,67 @@ public class TestJdbc {
 			e.printStackTrace();
 		}
 		
-	}
+		// INSERT requete
+		Article newArt = new Article();
+        newArt.setDescription("Crate mémoire");
+        newArt.setBrand("Philips");
+        newArt.setPrice(35);
+		
+		String sql = "INSERT INTO t_articles (description, brand, UnitaryPrice) VALUES (?, ?, ?)";
 
+        try (Connection connection = DriverManager.getConnection(url, login,password);
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, newArt.getDescription());
+            ps.setString(2, newArt.getBrand());
+            ps.setDouble(3, newArt.getPrice());
+
+            int nb = ps.executeUpdate();
+            if (nb == 1) {
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) newArt.setId(keys.getInt(1));
+                }
+            }
+            System.out.println("INSERT => " + newArt);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        //Update
+        String updateSql = "UPDATE t_articles SET Description = ?, Brand = ?, UnitaryPrice = ? WHERE IdArticle = ?";
+
+        try (Connection connection = DriverManager.getConnection(url, login, password);
+             PreparedStatement ps = connection.prepareStatement(updateSql)) {
+
+            newArt.setDescription("Casque");
+            newArt.setBrand("Gondor");
+            newArt.setPrice(1500);
+
+            ps.setString(1, newArt.getDescription());
+            ps.setString(2, newArt.getBrand());
+            ps.setDouble(3, newArt.getPrice());
+            ps.setInt(4, newArt.getId());
+
+            int nb = ps.executeUpdate();
+            System.out.println("UPDATE => " + (nb == 1) + " | " + newArt);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        //Delete
+        String deleteSql = "DELETE FROM t_articles WHERE IdArticle = ?";
+
+        try (Connection connection = DriverManager.getConnection(url, login, password);
+             PreparedStatement ps = connection.prepareStatement(deleteSql)) {
+
+            ps.setInt(1, newArt.getId());
+            int nb = ps.executeUpdate();
+
+            System.out.println("DELETE => " + (nb == 1) + " | id=" + newArt.getId());
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+	}
 }
