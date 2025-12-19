@@ -13,7 +13,11 @@ public class Article {
         this.price = price;
     }
     
-    /**
+    public Article() {
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
 	 * @param id the id to set
 	 */
 	public void setId(int id) {
