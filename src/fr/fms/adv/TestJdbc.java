@@ -13,6 +13,27 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class TestJdbc {
+	
+	//Methode de validation								//la methode peut échouer
+	private static void validateArticle(Article article) throws InvalidArticleException {
+
+	    if (article == null) {
+	        throw new InvalidArticleException("Article null : impossible de continuer.");
+	    }
+
+	    if (article.getDescription() == null || article.getDescription().trim().isEmpty()) {
+	        throw new InvalidArticleException("Description obligatoire (vide ou null).");
+	    }
+
+	    if (article.getBrand() == null || article.getBrand().trim().isEmpty()) {
+	        throw new InvalidArticleException("Brand obligatoire (vide ou null).");
+	    }
+
+	    if (article.getUnitaryPrice() <= 0) {
+	        throw new InvalidArticleException("Prix invalide : il doit être strictement > 0.");
+	    }
+	}
+
 
 	public static void main(String[] args) throws Exception {
 		
@@ -55,28 +76,40 @@ public class TestJdbc {
 		
 		// INSERT requete
 		Article newArt = new Article();
-        newArt.setDescription("Crate mémoire");
+        newArt.setDescription("");
         newArt.setBrand("Philips");
-        newArt.setPrice(35);
-		
-		String sql = "INSERT INTO t_articles (description, brand, UnitaryPrice) VALUES (?, ?, ?)";
-
-        try (Connection connection = DriverManager.getConnection(url, login,password);
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setString(1, newArt.getDescription());
-            ps.setString(2, newArt.getBrand());
-            ps.setDouble(3, newArt.getPrice());
-
-            int nb = ps.executeUpdate();
-            if (nb == 1) {
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) newArt.setId(keys.getInt(1));
-                }
-            }
-            System.out.println("INSERT => " + newArt);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        newArt.setUnitaryPrice(35);
+        
+        try {
+        	//on tente la validation + l’insert
+	        validateArticle(newArt); // peut déclencher InvalidArticleException
+	        
+			String sql = "INSERT INTO t_articles (description, brand, UnitaryPrice) VALUES (?, ?, ?)";
+	
+	        try (Connection connection = DriverManager.getConnection(url, login,password);
+	             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+	
+	            ps.setString(1, newArt.getDescription());
+	            ps.setString(2, newArt.getBrand());
+	            ps.setDouble(3, newArt.getUnitaryPrice());
+	
+	            int nb = ps.executeUpdate();
+	            if (nb == 1) {
+	                try (ResultSet keys = ps.getGeneratedKeys()) {
+	                    if (keys.next()) newArt.setId(keys.getInt(1));
+	                }
+	            }
+	            System.out.println("INSERT => " + newArt);
+	            
+	          //pour les problèmes techniques (driver, requête, colonne, etc.)  
+	        } catch (SQLException e) {
+	            //e.printStackTrace();
+	        	System.out.println("Erreur BDD pendant INSERT : " + e.getMessage());
+	        }
+	        
+	     //si l’article est invalide, on n’essaie même pas d’aller en base   
+        }catch (InvalidArticleException e) {
+        	System.out.println("Erreur de saisie (INSERT) : " + e.getMessage());
         }
         
         //Update
@@ -87,11 +120,11 @@ public class TestJdbc {
 
             newArt.setDescription("Casque");
             newArt.setBrand("Gondor");
-            newArt.setPrice(1500);
+            newArt.setUnitaryPrice(1500);
 
             ps.setString(1, newArt.getDescription());
             ps.setString(2, newArt.getBrand());
-            ps.setDouble(3, newArt.getPrice());
+            ps.setDouble(3, newArt.getUnitaryPrice());
             ps.setInt(4, newArt.getId());
 
             int nb = ps.executeUpdate();
